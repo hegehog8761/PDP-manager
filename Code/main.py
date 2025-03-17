@@ -1,5 +1,5 @@
 import tkinter as tk
-import subprocess, usb.core, warnings
+import subprocess, usb.core, warnings, os
 from PIL import ImageTk, Image
 
 
@@ -37,16 +37,26 @@ get_controllers()
 def draw_controller_screen():
     img = ImageTk.PhotoImage(Image.open("./resources/colour-wheel.png"))
     img_label = tk.Label(window, image=img)
-   
-    
-    
-    button = tk.Button(window, text="Hello World!")
-    button.pack(padx=10, pady=5)
+    img_label.image = img # Prevent python garbage collector from disposing of the image
 
-    img_label.pack(side = "bottom", fill = "both", expand = "yes")
+    img_label.grid(column=0, row=0)
+
+    img_label.bind("<Button-1>", update_colour)
+
+    window.update()
+
+def update_colour(event):
+    x = event.x - event.widget.winfo_x()
+    y = event.y - event.widget.winfo_y()
+
+    colour = event.widget.image._PhotoImage__photo.get(x, y)
+    if colour == (0, 0, 0):
+        return # Invalid colour, either clicked square border or inner center but cannot show white light
+    print(colour)
 
 draw_controller_screen()
 
 
 
-tk.mainloop()
+
+window.mainloop()
