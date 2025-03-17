@@ -35,7 +35,7 @@ get_controllers()
 ### Draw controller management page
 
 def draw_controller_screen():
-    img = ImageTk.PhotoImage(Image.open("/home/william/Documents/PDP control hub/PDP-manager/Code/resources/colour-wheel.png"))
+    img = ImageTk.PhotoImage(Image.open("./resources/colour-wheel.png"))
     img_label = tk.Label(window, image=img)
    
     
@@ -43,7 +43,7 @@ def draw_controller_screen():
     button = tk.Button(window, text="Hello World!")
     button.pack(padx=10, pady=5)
 
-    img_label.pack(padx=10, pady=10)
+    img_label.pack(side = "bottom", fill = "both", expand = "yes")
 
 draw_controller_screen()
 
