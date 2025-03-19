@@ -10,6 +10,8 @@ window.title("PDP manager")
 red_variable = tk.StringVar()
 green_variable = tk.StringVar()
 blue_variable = tk.StringVar()
+brightness_variable = tk.IntVar()
+preview_box = None
 
 
 ###   Set up controller selection menu
@@ -40,7 +42,7 @@ get_controllers()
 ### Draw controller management page
 
 def draw_controller_screen():
-    global red_variable, green_variable, blue_variable
+    global red_variable, green_variable, blue_variable, preview_box, brightness_variable
     ## Draw colour wheel
     img = ImageTk.PhotoImage(Image.open("./resources/colour-wheel.png").resize((375, 375)))
     img_label = tk.Label(window, image=img)
@@ -78,8 +80,21 @@ def draw_controller_screen():
     ## Draw colour preview box
 
     preview_label = tk.Label(window, text="Preview: ")
-    preview_label.grid(padx=0, pady=5, row=3, column=2)
-    preview_box = tk.Label(window, text=" ", width=5, height=1, background=hex_value_here)
+    preview_label.grid(padx=0, pady=5, row=3, column=1)
+    preview_box = tk.Label(window, text=" ", width=5, height=1, background=rgb_to_hex(int(red_variable.get()), int(green_variable.get()), int(blue_variable.get())), borderwidth=2, relief="groove")
+    preview_box.grid(padx=0, pady=5, row=3, column=2)
+
+
+    ## Draw brightness slider
+    brightness_label = tk.Label(window, text="Brightness:")
+    brightness_label.grid(padx=15, pady=5, row=0, column=3)
+    brightness_slider = tk.Scale(window, from_=100,  length=350, to=0, orient=tk.VERTICAL, variable=brightness_variable)
+    brightness_slider.grid(padx=0, pady=15, row=1, column=3, rowspan=3)
+
+    # Draw update controller button
+    update_button = tk.Button(window, text="Update", command=update_controller_values)
+    update_button.grid(row=5)
+
     
 
 def validate_rgb_val(event):
@@ -95,7 +110,10 @@ def validate_rgb_val(event):
             rgb_var.set("0")
         else: # String is not a number but probably empty so allow for when a user is replacing the value with a new on
             pass
+    update_preview_colour()
             
+def rgb_to_hex(red, green, blue):
+    return "#" + ('{:02X}' * 3).format(red, green, blue)
 
 def update_colour(event):
     global red_variable, green_variable, blue_variable
@@ -107,15 +125,26 @@ def update_colour(event):
     except tk.TclError:
         return # Clicked outside of the image
     if colour == (0, 0, 0):
-        return # Invalid colour, either clicked square border or inner center but cannot show white light
+        return # Counted as invalid colour, hopefully user just types it in rather than trying to click oit on the wheel as that won't work
     
     red_variable.set(colour[0])
     green_variable.set(colour[1])
     blue_variable.set(colour[2])
+    update_preview_colour()
+
+
+def update_preview_colour():
+    global preview_box
+    if any(variable.get() == '' for variable in [red_variable, green_variable, blue_variable]):
+        return # User is busy typing new colour code so don't update
+    preview_box.config(background=rgb_to_hex(int(red_variable.get()), int(green_variable.get()), int(blue_variable.get())))
+
+
+def update_controller_values():
+    print(f"Update controller to RGB({red_variable.get()}, {green_variable.get()}, {blue_variable.get()}), brightness {brightness_variable.get()}%")
+
 
 draw_controller_screen()
-
-
 
 
 window.mainloop()
