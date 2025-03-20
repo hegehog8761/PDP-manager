@@ -12,6 +12,7 @@ green_variable = tk.StringVar()
 blue_variable = tk.StringVar()
 brightness_variable = tk.IntVar()
 preview_box = None
+device_port = None
 
 
 ###   Set up controller selection menu
@@ -25,6 +26,10 @@ def get_controllers():
         try:
             manufacturer = device.manufacturer
 
+
+            warnings.warn("Currently adding all devices to list of controllers!")
+            controllers.append(device)
+
             warnings.warn("Currently checking for incorrect manufacturer, ensure to change manufacturer name upon release.")
             if manufacturer == "Sunplus IT Co ":
                 print("Found usb")
@@ -37,6 +42,35 @@ def get_controllers():
 get_controllers()
 
 ### Draw controller selection menu
+
+def draw_selection_menu():
+    title = tk.Label(window, text="Select Controller.", font=("Carrier", 20))
+    title.grid(row=0, column=0, columnspan=3)
+    rw = 1
+    col = 0
+    for controller in controllers:
+        name = controller.product
+        port = controller.port_number
+        print(f"{port=}")
+        button = tk.Button(window, text=name, command=lambda p=port: select_device(p))
+        button.grid(row=rw, column=col)
+        col+=1
+        if col == 3:
+            col = 0
+            rw+=1
+
+    custom_port = tk.Button(window, text="Other device", command=custom_device_port)
+    custom_port.grid(row=rw+1, column=0)
+
+def select_device(id):
+    global device_port, window
+    device_port = id
+    window.withdraw()
+    tk.Toplevel(window)
+    draw_controller_screen()
+
+def custom_device_port():
+    print("Custom port")
 
 
 ### Draw controller management page
@@ -144,7 +178,10 @@ def update_controller_values():
     print(f"Update controller to RGB({red_variable.get()}, {green_variable.get()}, {blue_variable.get()}), brightness {brightness_variable.get()}%")
 
 
-draw_controller_screen()
+#draw_controller_screen()
 
+
+### Draw first screen to display last thing to make sure everything is defined
+draw_selection_menu()
 
 window.mainloop()
