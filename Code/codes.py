@@ -1,2 +1,2 @@
 class mode():
-    off = "21 00 84 01 a1"
+    off = "\x21\x84\x01\xa1"

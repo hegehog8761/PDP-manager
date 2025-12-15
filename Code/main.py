@@ -1,5 +1,5 @@
 import tkinter as tk
-import subprocess, usb.core, warnings, os
+import subprocess, usb.core, warnings, os, codes
 from PIL import ImageTk, Image
 
 
@@ -25,14 +25,7 @@ def get_controllers():
     for device in devices:
         try:
             manufacturer = device.manufacturer
-
-
-            warnings.warn("Currently adding all devices to list of controllers!")
-            controllers.append(device)
-
-            warnings.warn("Currently checking for incorrect manufacturer, ensure to change manufacturer name upon release.")
-            if manufacturer == "Sunplus IT Co ":
-                print("Found usb")
+            if manufacturer == "Performance Designed Products":
                 controllers.append(device)
             
         except ValueError:
@@ -51,7 +44,6 @@ def draw_selection_menu():
     for controller in controllers:
         name = controller.product
         port = controller.port_number
-        print(f"{port=}")
         button = tk.Button(window, text=name, command=lambda p=port: select_device(p))
         button.grid(row=rw, column=col)
         col+=1
@@ -63,10 +55,11 @@ def draw_selection_menu():
     custom_port.grid(row=rw+1, column=0)
 
 def select_device(id):
-    global device_port, window
+    global device_port, window, old_window
     device_port = id
     window.withdraw()
-    tk.Toplevel(window)
+    old_window = window
+    window = tk.Toplevel(window)
     draw_controller_screen()
 
 def custom_device_port():
@@ -78,7 +71,7 @@ def custom_device_port():
 def draw_controller_screen():
     global red_variable, green_variable, blue_variable, preview_box, brightness_variable
     ## Draw colour wheel
-    img = ImageTk.PhotoImage(Image.open("./resources/colour-wheel.png").resize((375, 375)))
+    img = ImageTk.PhotoImage(Image.open(f"{os.path.dirname(os.path.realpath(__file__))}/resources/colour-wheel.png").resize((375, 375)))
     img_label = tk.Label(window, image=img)
     img_label.image = img # Prevent python garbage collector from disposing of the image
 
@@ -159,7 +152,7 @@ def update_colour(event):
     except tk.TclError:
         return # Clicked outside of the image
     if colour == (0, 0, 0):
-        return # Counted as invalid colour, hopefully user just types it in rather than trying to click oit on the wheel as that won't work
+        return # Counted as invalid colour, hopefully user just types it in rather than trying to click it on the wheel as that won't work
     
     red_variable.set(colour[0])
     green_variable.set(colour[1])
@@ -176,12 +169,24 @@ def update_preview_colour():
 
 def update_controller_values():
     print(f"Update controller to RGB({red_variable.get()}, {green_variable.get()}, {blue_variable.get()}), brightness {brightness_variable.get()}%")
+    device = usb.core.find(custom_match = lambda d: d.port_number == device_port)
+    endpoint = device[0][(0, 0)][0]
+    device.detach_kernel_driver(device[0][(0, 0)].bInterfaceNumber)
+    endpoint.write(codes.mode.off)
 
 
-#draw_controller_screen()
+def close_down():
+    global old_window, window
+    old_window.destroy()
+    window.destroy()
+    exit()
+    print("after exit")
+
 
 
 ### Draw first screen to display last thing to make sure everything is defined
 draw_selection_menu()
+
+window.protocol("WM_DELETE_WINDOW", close_down)
 
 window.mainloop()
