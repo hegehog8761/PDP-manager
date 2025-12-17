@@ -171,9 +171,9 @@ def update_controller_values():
     print(f"Update controller to RGB({red_variable.get()}, {green_variable.get()}, {blue_variable.get()}), brightness {brightness_variable.get()}%")
     device = usb.core.find(custom_match = lambda d: d.port_number == device_port)
     print(f"Communincating with {device.product}")
-    endpoint = device[0][(0, 0)][0]
-    # rdevice.detach_kernel_driver(device[0][(0, 0)].bInterfaceNumber)
-    endpoint.write(codes.mode.off)
+    # endpoint = device[0][(0, 0)][0]
+    # device.detach_kernel_driver(device[0][(0, 0)].bInterfaceNumber)
+    # endpoint.write(codes.mode.off)
 
 
 def close_down():
